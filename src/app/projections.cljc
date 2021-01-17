@@ -102,6 +102,14 @@
              (mat-mul-3x2-3 cavalier-transform vertex))
            object))
 
+(defn project-military [angle]
+  (let [c (math/cos angle)
+        s (math/sin angle)]
+    (partial project
+             (fn [[x y z]]
+               [(- (* c x) (* s z))
+                (+ (* s x) (* c z) y)]))))
+
 (comment
 
   (/ (math/sqrt 2) 2)

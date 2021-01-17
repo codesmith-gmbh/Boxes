@@ -27,7 +27,7 @@
                  (fn [idx [p1 p2]]
                    (let [[x1 y1] (get vertices p1)
                          [x2 y2] (get vertices p2)]
-                     (d/line {:key idx :x1 (* 20 x1) :y1 (+ 450 (* -20 y1)) :x2 (* 20 x2) :y2 (+ 450 (* -20 y2))}))))
+                     (d/line {:key idx :x1 (+ (* 20 x1) 100) :y1 (+ 300 (* -20 y1)) :x2 (+ 100 (* 20 x2)) :y2 (+ 300 (* -20 y2))}))))
                edges)))
 
 (defnc cube []
@@ -39,7 +39,7 @@
 (defnc app []
   (let [[angle set-angle] (hooks/use-state 45)]
     (d/div
-      (svg ((p/project-oblique (p/degree-to-rad angle)) p/house))
+      (svg ((p/project-military (p/degree-to-rad (- angle))) p/house))
       (d/div {:style {:width 500}}
              (d/input {:style     {:width 300} :type "range" :min 0 :max 90 :value angle
                        :on-change #(set-angle (value %1))})
