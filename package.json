@@ -1,0 +1,20 @@
+{
+  "name": "boxes",
+  "version": "1.0.0",
+  "description": "Boxes on the web",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Stanislas Nanchen",
+  "license": "ISC",
+  "devDependencies": {
+    "shadow-cljs": "^2.11.14"
+  },
+  "dependencies": {
+    "p5": "^1.2.0",
+    "react": "^17.0.1",
+    "react-dom": "^17.0.1",
+    "react-refresh": "0.8.1"
+  }
+}
