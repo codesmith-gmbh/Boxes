@@ -81,6 +81,10 @@
     [(+ (* x11 y1) (* x12 y2) (* x13 y3))
      (+ (* x21 y1) (* x22 y2) (* x23 y3))]))
 
+(defn project-matrice [m]
+  (partial project (fn [vertex]
+                     (mat-mul-3x2-3 m vertex))))
+
 (defn degree-to-rad [angle]
   (* (/ math/pi 180) angle))
 
@@ -89,10 +93,7 @@
    0 1 (math/sin angle)])
 
 (defn project-oblique [angle]
-  (let [mat (oblique-transform angle)]
-    (partial project
-             (fn [vertex]
-               (mat-mul-3x2-3 mat vertex)))))
+  (project-matrice (oblique-transform angle)))
 
 (def cavalier-transform
   (oblique-transform (/ math/pi 8)))
@@ -109,6 +110,13 @@
              (fn [[x y z]]
                [(- (* c x) (* s z))
                 (+ (* s x) (* c z) y)]))))
+
+(defn isometric-matrice [angle-x angle-y angle-z]
+  [(math/cos angle-x) (math/cos angle-y) (math/cos angle-z)
+   (math/sin angle-x) (math/sin angle-y) (math/sin angle-z)])
+
+(defn project-isometric [angle-x angle-y angle-z]
+  (project-matrice (isometric-matrice angle-x angle-y angle-z)))
 
 (comment
 

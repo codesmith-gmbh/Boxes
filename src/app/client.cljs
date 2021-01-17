@@ -51,7 +51,6 @@
 
 (defnc rendering [{:keys [height width projection object x-translate y-translate magnify]}]
   (let [{:keys [vertices edges]} (projection object)]
-    (println [x-translate y-translate])
     (d/svg {:height         height
             :width          width
             :style          {:border "1px solid black"}
@@ -73,7 +72,9 @@
 (defnc app [{:keys [size]}]
   (let [[x-translate set-x-translate] (hooks/use-state 100)
         [y-translate set-y-translate] (hooks/use-state 300)
-        [angle set-angle] (hooks/use-state 45)]
+        [angle-x set-angle-x] (hooks/use-state 30)
+        [angle-y set-angle-y] (hooks/use-state 90)
+        [angle-z set-angle-z] (hooks/use-state -30)]
     (d/div
       ($ numeric-slider {:width     size
                          :state     x-translate
@@ -90,16 +91,31 @@
       ($ rendering {:height      size
                     :width       size
                     :object      p/house
-                    :projection  (p/project-military (p/degree-to-rad (- angle)))
+                    :projection  (p/project-isometric
+                                   (p/degree-to-rad angle-x)
+                                   (p/degree-to-rad angle-y)
+                                   (p/degree-to-rad angle-z))
                     :x-translate x-translate
                     :y-translate y-translate
                     :magnify     20})
       ($ numeric-slider {:width     size
-                         :state     angle
-                         :set-state set-angle
-                         :min       0
+                         :state     angle-x
+                         :set-state set-angle-x
+                         :min       -90
                          :max       90
-                         :label     "angle"}))))
+                         :label     "angle x"})
+      ($ numeric-slider {:width     size
+                         :state     angle-y
+                         :set-state set-angle-y
+                         :min       -90
+                         :max       90
+                         :label     "angle y"})
+      ($ numeric-slider {:width     size
+                         :state     angle-z
+                         :set-state set-angle-z
+                         :min       -90
+                         :max       90
+                         :label     "angle z"}))))
 
 (defn mount! []
   (rdom/render
