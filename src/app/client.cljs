@@ -30,29 +30,80 @@
                      (d/line {:key idx :x1 (+ (* 20 x1) 100) :y1 (+ 300 (* -20 y1)) :x2 (+ 100 (* 20 x2)) :y2 (+ 300 (* -20 y2))}))))
                edges)))
 
-(defnc cube []
-  (svg (p/project-cavalier p/house)))
-
 (defn value [event]
   (.-value (.-target event)))
 
-(defnc app []
-  (let [[angle set-angle] (hooks/use-state 45)]
+(defnc numeric-slider [{:keys [width state set-state min max label]}]
+  (let [on-change #(let [number (js/parseInt (value %1))
+                         number (if (js/isNaN number) min number)
+                         number (if (< number min) min number)
+                         number (if (> number max) max number)]
+                     (set-state number))]
+    (d/div {:style {:width width :padding "5"}}
+           (d/input {:style     {:width (- width 100)} :type "range" :min min :max max :value state
+                     :on-change on-change})
+           (d/input {:style     {:width 40}
+                     :type      "text" :value state
+                     :on-change on-change})
+           (d/span {:style {:width 50 :padding-left "5"}}
+                   label))))
+
+
+(defnc rendering [{:keys [height width projection object x-translate y-translate magnify]}]
+  (let [{:keys [vertices edges]} (projection object)]
+    (println [x-translate y-translate])
+    (d/svg {:height         height
+            :width          width
+            :style          {:border "1px solid black"}
+            :viewBox        "0 0 500 500" :xmlns "http://www.w3.org/2000/svg"
+            :stroke-linecap "round"
+            :stroke         "black" :stroke-width 2}
+           (into []
+                 (map-indexed
+                   (fn [idx [p1 p2]]
+                     (let [[x1 y1] (get vertices p1)
+                           [x2 y2] (get vertices p2)]
+                       (d/line {:key idx
+                                :x1  (+ (* magnify x1) x-translate)
+                                :y1  (+ (* -1 magnify y1) y-translate)
+                                :x2  (+ (* magnify x2) x-translate)
+                                :y2  (+ (* -1 magnify y2) y-translate)}))))
+                 edges))))
+
+(defnc app [{:keys [size]}]
+  (let [[x-translate set-x-translate] (hooks/use-state 100)
+        [y-translate set-y-translate] (hooks/use-state 300)
+        [angle set-angle] (hooks/use-state 45)]
     (d/div
-      (svg ((p/project-military (p/degree-to-rad (- angle))) p/house))
-      (d/div {:style {:width 500}}
-             (d/input {:style     {:width 300} :type "range" :min 0 :max 90 :value angle
-                       :on-change #(set-angle (value %1))})
-             (d/input {:type "text" :value angle
-                       :on-change #(let [number (js/parseInt (value %1))
-                                         number (if (js/isNaN number) 0 number)
-                                         number (if (< number 0) 0 number)
-                                         number (if (> number 90) 90 number)]
-                                     (set-angle number))})))))
+      ($ numeric-slider {:width     size
+                         :state     x-translate
+                         :set-state set-x-translate
+                         :min       0
+                         :max       size
+                         :label     "x-transl"})
+      ($ numeric-slider {:width     size
+                         :state     y-translate
+                         :set-state set-y-translate
+                         :min       0
+                         :max       size
+                         :label     "y-transl"})
+      ($ rendering {:height      size
+                    :width       size
+                    :object      p/house
+                    :projection  (p/project-military (p/degree-to-rad (- angle)))
+                    :x-translate x-translate
+                    :y-translate y-translate
+                    :magnify     20})
+      ($ numeric-slider {:width     size
+                         :state     angle
+                         :set-state set-angle
+                         :min       0
+                         :max       90
+                         :label     "angle"}))))
 
 (defn mount! []
   (rdom/render
-    ($ app)
+    ($ app {:size 500})
     (js/document.getElementById "app")))
 
 (defn init []
