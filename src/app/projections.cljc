@@ -118,7 +118,69 @@
 (defn project-isometric [angle-x angle-y angle-z]
   (project-matrice (isometric-matrice angle-x angle-y angle-z)))
 
+(defn vector-from-to
+  ([from to]
+   (let [[x1 y1 z1] from
+         [x2 y2 z2] to]
+     [(- x2 x1) (- y2 y1) (- z2 z1)]))
+  ([from]
+   (partial vector-from-to from)))
+
+(defn vector-length [v]
+  (math/sqrt (transduce (map math/sqr) (completing +) v)))
+
+(defn perspective-rigid-transformation [[xe ye ze :as eye] center]
+  (let [[dx dy dz :as dp] (vector-from-to eye center)
+        r1 (vector-length [dx dz])
+        s1 (/ dx r1)
+        c1 (/ dz r1)
+        [_ rdy rdz :as rdp] [(- (* c1 dx) (* s1 dz)) dy (+ (* s1 dx) (* c1 dz))]
+        r2 (vector-length rdp)
+        c2 (/ rdz r2)
+        s2 (/ rdy r2)]
+    (print dp rdp)
+    (print (vector-length dp) (vector-length rdp))
+    (print s1 c1 s2 c2)
+    (fn [[x y z]]
+      (let [x-xe (- x xe)
+            y-ye (- y ye)
+            z-ze (- z ze)]
+        [(- (* c1 x-xe) (* s1 z-ze))
+         (+ (- (* s1 s2 x-xe))
+            (* c2 y-ye)
+            (- (* c1 s2 z-ze)))
+         (+ (* s1 c2 x-xe)
+            (* s2 y-ye)
+            (* c1 c2 z-ze))]))))
+
+(defn project-rigid [object]
+  ;; constants from the course
+  (let [f (perspective-rigid-transformation [11.0 2.0 -15.0] [3.5 3.0 5.0])
+        g (fn [v]
+            (let [[x y z] (f v)]
+              [x y]))]
+    (project g object)))
+
+(defn project-perspective [object]
+  (let [f (perspective-rigid-transformation [11.0 2.0 -15.0] [3.5 3.0 5.0])
+        g (fn [v]
+            (let [[x y z] (f v)]
+              [(* 20 (/ x z)) (* 20 (/ y z))]))]
+    (project g object)))
+
+(defn dynamic-perspective [xe ye ze]
+  (let [f (perspective-rigid-transformation [xe ye ze] [3.5 3.0 5.0])
+        g (fn [v]
+            (let [[x y z] (f v)]
+              [(* 20 (/ x z)) (* 20 (/ y z))]))]
+    (fn [object]
+      (project g object))))
+
 (comment
+
+  (vector-length [3 4])
+
+  (transduce (map math/sqr) (completing +) 0 [3 4])
 
   (/ (math/sqrt 2) 2)
 
